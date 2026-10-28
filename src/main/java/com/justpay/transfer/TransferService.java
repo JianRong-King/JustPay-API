@@ -4,7 +4,9 @@ import static com.justpay.common.Timestamps.now;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Optional;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,8 @@ import com.justpay.ledger.LedgerRepository;
 @Service
 public class TransferService {
 
+	private static final String PAYMENT_REQUEST_ID_CONSTRAINT = "uq_transfers_payment_request_id";
+
 	private final TransferRepository transferRepository;
 	private final AccountRepository accountRepository;
 	private final BalanceRepository balanceRepository;
@@ -39,7 +43,12 @@ public class TransferService {
 	}
 
 	@Transactional
-	public TransferResponse transfer(TransferRequest request) {
+	public TransferResult transfer(TransferRequest request) {
+		Optional<Transfer> existing = findExisting(request);
+		if (existing.isPresent()) {
+			return replay(existing.get());
+		}
+
 		requireAccountExists(request.fromAccountId());
 		requireAccountExists(request.toAccountId());
 		requireDifferentBalances(request);
@@ -50,13 +59,18 @@ public class TransferService {
 
 		LockedBalances balances = lockBalances(request);
 
+		existing = findExisting(request);
+		if (existing.isPresent()) {
+			return replay(existing.get());
+		}
+
 		requireEnoughMoney(balances.from(), amount);
 
 		balances.from().subtract(amount);
 		balances.to().add(conversion.toAmount());
 
 		Instant now = now();
-		Transfer transfer = transferRepository.save(new Transfer(request.paymentRequestId(),
+		Transfer transfer = saveTransfer(new Transfer(request.paymentRequestId(),
 				request.fromAccountId(), request.fromCurrency(), amount,
 				request.toAccountId(), request.toCurrency(), conversion.toAmount(),
 				conversion.rate(), now));
@@ -65,7 +79,7 @@ public class TransferService {
 		ledgerRepository.save(LedgerEntry.transferIn(request.toAccountId(), request.toCurrency(),
 				conversion.toAmount(), transfer.getId(), now));
 
-		return TransferResponse.from(transfer);
+		return new TransferResult(TransferResponse.from(transfer), true);
 	}
 
 	@Transactional(readOnly = true)
@@ -74,6 +88,44 @@ public class TransferService {
 				.map(TransferResponse::from)
 				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "TRANSFER_NOT_FOUND",
 						"Transfer " + id + " not found"));
+	}
+
+	private Optional<Transfer> findExisting(TransferRequest request) {
+		Optional<Transfer> existing = transferRepository.findByPaymentRequestId(request.paymentRequestId());
+		existing.ifPresent(transfer -> requireSameDetails(transfer, request));
+		return existing;
+	}
+
+	private static TransferResult replay(Transfer transfer) {
+		return new TransferResult(TransferResponse.from(transfer), false);
+	}
+
+	private static void requireSameDetails(Transfer transfer, TransferRequest request) {
+		boolean same = transfer.getFromAccountId().equals(request.fromAccountId())
+				&& transfer.getFromCurrency() == request.fromCurrency()
+				&& transfer.getToAccountId().equals(request.toAccountId())
+				&& transfer.getToCurrency() == request.toCurrency()
+				&& transfer.getFromAmount().compareTo(request.amount()) == 0;
+		if (!same) {
+			throw paymentRequestIdConflict(request.paymentRequestId());
+		}
+	}
+
+	private Transfer saveTransfer(Transfer transfer) {
+		try {
+			return transferRepository.save(transfer);
+		} catch (DataIntegrityViolationException ex) {
+			String cause = String.valueOf(ex.getMostSpecificCause().getMessage());
+			if (cause.contains(PAYMENT_REQUEST_ID_CONSTRAINT)) {
+				throw paymentRequestIdConflict(transfer.getPaymentRequestId());
+			}
+			throw ex;
+		}
+	}
+
+	private static ApiException paymentRequestIdConflict(String paymentRequestId) {
+		return new ApiException(HttpStatus.CONFLICT, "PAYMENT_REQUEST_ID_CONFLICT",
+				"paymentRequestId '" + paymentRequestId + "' was already used with different details");
 	}
 
 	private void requireAccountExists(Long accountId) {

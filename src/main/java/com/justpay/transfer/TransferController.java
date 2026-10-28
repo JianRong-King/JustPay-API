@@ -1,12 +1,12 @@
 package com.justpay.transfer;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -22,9 +22,10 @@ public class TransferController {
 	}
 
 	@PostMapping
-	@ResponseStatus(HttpStatus.CREATED)
-	public TransferResponse create(@Valid @RequestBody TransferRequest request) {
-		return transferService.transfer(request);
+	public ResponseEntity<TransferResponse> create(@Valid @RequestBody TransferRequest request) {
+		TransferResult result = transferService.transfer(request);
+		HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
+		return ResponseEntity.status(status).body(result.transfer());
 	}
 
 	@GetMapping("/{id}")
