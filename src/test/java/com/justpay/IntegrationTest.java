@@ -18,6 +18,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -56,7 +57,7 @@ public abstract class IntegrationTest {
 
 	@BeforeEach
 	void cleanDatabase() {
-		jdbcTemplate.execute("TRUNCATE accounts, balances, ledger_entries RESTART IDENTITY CASCADE");
+		jdbcTemplate.execute("TRUNCATE accounts, balances, ledger_entries, transfers RESTART IDENTITY CASCADE");
 	}
 
 	@AfterEach
@@ -108,6 +109,20 @@ public abstract class IntegrationTest {
 
 	protected static String depositJson(String currency, String amount) {
 		return "{\"currency\": \"" + currency + "\", \"amount\": " + amount + "}";
+	}
+
+	protected ResultActions postTransfer(String json) throws Exception {
+		return mockMvc.perform(post("/api/v1/transfers")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(json));
+	}
+
+	protected static String transferJson(String paymentRequestId, Long fromAccountId, String fromCurrency,
+			Long toAccountId, String toCurrency, String amount) {
+		return """
+				{"paymentRequestId": "%s", "fromAccountId": %d, "fromCurrency": "%s",
+				 "toAccountId": %d, "toCurrency": "%s", "amount": %s}
+				""".formatted(paymentRequestId, fromAccountId, fromCurrency, toAccountId, toCurrency, amount);
 	}
 
 }
