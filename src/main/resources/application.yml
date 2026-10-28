@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: justpay
+  datasource:
+    url: jdbc:postgresql://localhost:5433/justpay
+    username: justpay
+    password: justpay
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
