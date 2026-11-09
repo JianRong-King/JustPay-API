@@ -167,3 +167,20 @@ Built:
 
 Verification:
 - Script check: all 159 non-empty lines of the old CLAUDE.md exist in the new CLAUDE.md + rule files.
+
+## Claude setup 4 — Skills (2026-11-09)
+
+Built (`.claude/skills/<name>/SKILL.md`):
+- `/step <goal>`: plan → wait → build → `/verify` → reviewer agents → explain → `/ai-log` → propose commit.
+- `/verify`: Docker check → `./mvnw -B verify` → PASS/FAIL summary from `target/surefire-reports/*.txt`.
+- `/ai-log`: append entry in this file's Built/Decisions/Issues/Verification format.
+- `/new-migration <desc>`: next `V{n+1}__*.sql`, existing constraint naming (`uq_`, `chk_`, `fk_`).
+- `/explain <topic>`: code-grounded explanation + concepts + 2 check questions.
+- `/lesson`: draft a Lessons learned rule, ask before editing.
+
+Decisions:
+- `/step`, `/explain`, `/lesson` user-only (`disable-model-invocation`); `/verify`, `/ai-log`, `/new-migration` Claude can also call.
+- Commit messages in repo style `type(scope): summary`, no Co-Authored-By line (user).
+
+Issues:
+- First draft used `ck_` prefix; existing migrations use `chk_`. Fixed.
