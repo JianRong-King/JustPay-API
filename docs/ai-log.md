@@ -135,3 +135,9 @@ Verified:
 - User noticed `FX_RATES` was not connected in the README data model diagram.
 - Checked: correct for the schema. `transfers.rate` is a copied value, not a foreign key; same-currency transfers use rate 1, which has no `fx_rates` row.
 - Added a dotted line `FX_RATES ||..o{ TRANSFERS : "rate copied into"` (dotted = no foreign key) and one explaining sentence.
+
+## Claude setup 1 — Shared settings (2026-11-09)
+
+Built:
+- `.claude/settings.json` (committed): allow verify / docker / git read / gh read commands; ask before editing `pom.xml`, `CLAUDE.md` or `git push`; deny force push, `git reset --hard`, `rm -rf`, `docker compose down -v`, reading `.env`.
+- `.gitignore`: `.claude/settings.local.json` stays personal.

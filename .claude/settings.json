@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(./mvnw verify)",
+      "Bash(./mvnw verify *)",
+      "Bash(./mvnw -B verify)",
+      "Bash(./mvnw -B verify *)",
+      "Bash(./mvnw test *)",
+      "Bash(docker info)",
+      "Bash(docker compose ps *)",
+      "Bash(docker compose up -d)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(gh pr view *)",
+      "Bash(gh pr diff *)"
+    ],
+    "ask": [
+      "Edit(./pom.xml)",
+      "Write(./pom.xml)",
+      "Edit(./CLAUDE.md)",
+      "Write(./CLAUDE.md)",
+      "Bash(git push *)"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git reset --hard *)",
+      "Bash(rm -rf *)",
+      "Bash(docker compose down -v *)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  }
+}
