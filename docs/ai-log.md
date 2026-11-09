@@ -141,3 +141,18 @@ Verified:
 Built:
 - `.claude/settings.json` (committed): allow verify / docker / git read / gh read commands; ask before editing `pom.xml`, `CLAUDE.md` or `git push`; deny force push, `git reset --hard`, `rm -rf`, `docker compose down -v`, reading `.env`.
 - `.gitignore`: `.claude/settings.local.json` stays personal.
+
+## Claude setup 2 — Hooks (2026-11-09)
+
+Built:
+- `.claude/hooks/protect-migrations.sh` (PreToolUse, Edit/Write/MultiEdit): blocks edits to any `V*__*.sql` already committed in git.
+- `.claude/hooks/check-java-rules.sh` (PostToolUse): main code → flags `double`/`float`, `@Autowired`, Lombok, RoundingMode other than HALF_EVEN; tests → flags `@Disabled`, `assumeTrue/False`.
+- Wired in `.claude/settings.json`. Exit 2 = message sent back to Claude.
+
+Decisions:
+- Bash + grep/sed/tr, no `jq` (not installed).
+- No `./mvnw verify` Stop hook: Testcontainers run is ~1 min, too slow per turn.
+
+Issues:
+- First test used `echo`, which collapsed JSON `\` to `\`; hook missed V1. Path normalisation changed to `tr '\' '/' | tr -s '/'` (handles both); re-tested with real JSON from a Node harness: 8/8 pass, 41 existing Java files not flagged.
+- Test run with `rm -rf` was blocked by the new deny rule (expected).
