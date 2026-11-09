@@ -156,3 +156,14 @@ Decisions:
 Issues:
 - First test used `echo`, which collapsed JSON `\` to `\`; hook missed V1. Path normalisation changed to `tr '\' '/' | tr -s '/'` (handles both); re-tested with real JSON from a Node harness: 8/8 pass, 41 existing Java files not flagged.
 - Test run with `rm -rf` was blocked by the new deny rule (expected).
+
+## Claude setup 3 — Split CLAUDE.md into scoped rules (2026-11-09)
+
+Built:
+- `.claude/rules/` with `paths:` frontmatter, sections copied verbatim by script from the committed CLAUDE.md:
+  `domain.md` (data model, money, transfer, conversion, idempotency, ledger), `database.md`, `api.md` (endpoints, API conventions), `java-style.md`, `testing.md`.
+- CLAUDE.md: 201 → 101 lines. Kept overview, stack, commands, structure, learning mode, lessons learned. Added "Always" block (3 critical rules + pointer to rules) and "Claude tooling" table.
+- `.gitattributes`: `*.sh text eol=lf` so hook scripts never get CRLF.
+
+Verification:
+- Script check: all 159 non-empty lines of the old CLAUDE.md exist in the new CLAUDE.md + rule files.
