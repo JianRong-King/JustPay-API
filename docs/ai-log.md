@@ -184,3 +184,13 @@ Decisions:
 
 Issues:
 - First draft used `ck_` prefix; existing migrations use `chk_`. Fixed.
+
+## Claude setup 5 — Subagents (2026-11-09)
+
+Built (`.claude/agents/`, read-only, model `sonnet`):
+- `money-rules-reviewer`: checks a diff against `.claude/rules/domain.md` (BigDecimal, compareTo, one HALF_EVEN rounding, one transaction, lock order, error codes, idempotency, ledger). Findings ranked HIGH/MEDIUM/LOW with a concrete scenario.
+- `test-guardian`: maps each required test to a method, checks naming, ledger-invariant `@AfterEach`, no H2, and that the diff does not delete, skip or weaken tests.
+
+Decisions:
+- Tools Read/Grep/Glob/Bash only (Bash for read-only git); no Edit/Write so reviewers cannot change code.
+- `/step` runs both before proposing a commit.
