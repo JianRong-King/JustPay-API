@@ -194,3 +194,17 @@ Built (`.claude/agents/`, read-only, model `sonnet`):
 Decisions:
 - Tools Read/Grep/Glob/Bash only (Bash for read-only git); no Edit/Write so reviewers cannot change code.
 - `/step` runs both before proposing a commit.
+
+## Claude setup 6 — GitHub PR review (2026-11-09)
+
+Built:
+- `.github/workflows/claude-review.yml` (`anthropics/claude-code-action@v1`, `claude-sonnet-5-5`, max 10 turns):
+  - `review`: on PR opened / updated / ready → reviews against CLAUDE.md, `.claude/rules/`, both agent checklists; inline comments + summary.
+  - `mention`: `@claude` in a PR comment → replies. Only OWNER / MEMBER / COLLABORATOR can trigger.
+
+Decisions (user):
+- Skip when `ANTHROPIC_API_KEY` secret is missing: workflow-level env from the secret, step `if: env.ANTHROPIC_API_KEY != ''`, notice logged. CI stays green.
+- `contents: read` only: Claude can comment, cannot push. Draft PRs not reviewed. `ci.yml` unchanged.
+
+Verification:
+- YAML parses. No repo secrets set yet, so both jobs will skip. Not run on GitHub yet.
