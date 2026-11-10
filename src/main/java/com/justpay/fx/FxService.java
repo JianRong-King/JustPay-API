@@ -34,7 +34,7 @@ public class FxService {
 
 	@Transactional(readOnly = true)
 	public List<FxRateResponse> listRates() {
-		return fxRateRepository.findAllByOrderById().stream().map(FxRateResponse::from).toList();
+		return fxRateRepository.findAllByOrderByFxRateId().stream().map(FxRateResponse::from).toList();
 	}
 
 }

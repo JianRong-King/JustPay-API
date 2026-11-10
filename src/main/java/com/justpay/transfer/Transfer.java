@@ -22,7 +22,7 @@ public class Transfer {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long transferId;
 
 	private String paymentRequestId;
 
@@ -60,8 +60,8 @@ public class Transfer {
 		this.createdAt = createdAt;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getTransferId() {
+		return transferId;
 	}
 
 	public String getPaymentRequestId() {

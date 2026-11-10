@@ -13,11 +13,11 @@ paths:
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/api/v1/accounts` | Create an account (gets MYR, USD, SGD balances at 0) |
-| GET | `/api/v1/accounts/{id}` | Get account with all three balances |
-| POST | `/api/v1/accounts/{id}/deposits` | Deposit `{currency, amount}` into one balance |
+| GET | `/api/v1/accounts/{accountId}` | Get account with all three balances |
+| POST | `/api/v1/accounts/{accountId}/deposits` | Deposit `{currency, amount}` into one balance |
 | POST | `/api/v1/transfers` | Transfer or convert money (see Transfer rules) |
-| GET | `/api/v1/transfers/{id}` | Get a transfer |
-| GET | `/api/v1/accounts/{id}/ledger` | List ledger entries, newest first; optional `?currency=` filter |
+| GET | `/api/v1/transfers/{transferId}` | Get a transfer |
+| GET | `/api/v1/accounts/{accountId}/ledger` | List ledger entries, newest first; optional `?currency=` filter |
 | GET | `/api/v1/fx/rates` | List the fixed exchange rates |
 
 ## API conventions

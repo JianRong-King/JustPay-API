@@ -24,7 +24,7 @@ class AccountApiTest extends IntegrationTest {
 		assertThat(created.balances()).extracting(BalanceResponse::currency).containsExactly(MYR, USD, SGD);
 		assertThat(created.balances()).allSatisfy(balance -> assertThat(balance.amount()).isEqualByComparingTo("0"));
 
-		String body = mockMvc.perform(get("/api/v1/accounts/" + created.id()))
+		String body = mockMvc.perform(get("/api/v1/accounts/" + created.accountId()))
 				.andExpect(status().isOk())
 				.andReturn().getResponse().getContentAsString();
 		assertThat(objectMapper.readValue(body, AccountResponse.class)).isEqualTo(created);

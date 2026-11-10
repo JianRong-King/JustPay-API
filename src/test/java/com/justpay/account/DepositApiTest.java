@@ -23,7 +23,7 @@ class DepositApiTest extends IntegrationTest {
 
 	@Test
 	void should_increaseOnlyUsdBalanceAndWriteOneLedgerEntry_when_usdDeposited() throws Exception {
-		Long accountId = createAccount("Alice").id();
+		Long accountId = createAccount("Alice").accountId();
 
 		AccountResponse account = deposit(accountId, USD, "100.50");
 
@@ -42,7 +42,7 @@ class DepositApiTest extends IntegrationTest {
 
 	@Test
 	void should_return400_when_depositCurrencyUnsupported() throws Exception {
-		Long accountId = createAccount("Alice").id();
+		Long accountId = createAccount("Alice").accountId();
 
 		mockMvc.perform(post("/api/v1/accounts/" + accountId + "/deposits")
 						.contentType(MediaType.APPLICATION_JSON)
@@ -55,21 +55,21 @@ class DepositApiTest extends IntegrationTest {
 
 	@Test
 	void should_return400_when_depositAmountIsZero() throws Exception {
-		Long accountId = createAccount("Alice").id();
+		Long accountId = createAccount("Alice").accountId();
 
 		postDeposit(accountId, depositJson("USD", "0"));
 	}
 
 	@Test
 	void should_return400_when_depositAmountIsNegative() throws Exception {
-		Long accountId = createAccount("Alice").id();
+		Long accountId = createAccount("Alice").accountId();
 
 		postDeposit(accountId, depositJson("USD", "-5.00"));
 	}
 
 	@Test
 	void should_return400_when_depositAmountHasMoreThanTwoDecimals() throws Exception {
-		Long accountId = createAccount("Alice").id();
+		Long accountId = createAccount("Alice").accountId();
 
 		postDeposit(accountId, depositJson("USD", "1.234"));
 	}
@@ -85,7 +85,7 @@ class DepositApiTest extends IntegrationTest {
 
 	@Test
 	void should_returnNewestFirstFilteredEntries_when_ledgerCurrencyGiven() throws Exception {
-		Long accountId = createAccount("Alice").id();
+		Long accountId = createAccount("Alice").accountId();
 		deposit(accountId, USD, "10.00");
 		deposit(accountId, MYR, "20.00");
 		deposit(accountId, USD, "5.00");
@@ -101,7 +101,7 @@ class DepositApiTest extends IntegrationTest {
 
 	@Test
 	void should_return400_when_ledgerCurrencyUnsupported() throws Exception {
-		Long accountId = createAccount("Alice").id();
+		Long accountId = createAccount("Alice").accountId();
 
 		mockMvc.perform(get("/api/v1/accounts/" + accountId + "/ledger?currency=EUR"))
 				.andExpect(status().isBadRequest())

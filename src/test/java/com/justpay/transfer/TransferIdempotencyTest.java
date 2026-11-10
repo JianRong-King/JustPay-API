@@ -21,8 +21,8 @@ class TransferIdempotencyTest extends IntegrationTest {
 
 	@Test
 	void should_createOneTransferAndReturnSameResponse_when_samePaymentRequestIdSentTwice() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "100.00");
 		String json = transferJson("pr-1", alice, "USD", bob, "USD", "30.00");
 
@@ -39,8 +39,8 @@ class TransferIdempotencyTest extends IntegrationTest {
 
 	@Test
 	void should_replay_when_sameAmountSentWithDifferentScale() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "100.00");
 
 		postTransfer(transferJson("pr-1", alice, "USD", bob, "USD", "30.00")).andExpect(status().isCreated());
@@ -51,8 +51,8 @@ class TransferIdempotencyTest extends IntegrationTest {
 
 	@Test
 	void should_return409_when_samePaymentRequestIdWithDifferentDetails() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "100.00");
 		postTransfer(transferJson("pr-1", alice, "USD", bob, "USD", "30.00")).andExpect(status().isCreated());
 
@@ -73,8 +73,8 @@ class TransferIdempotencyTest extends IntegrationTest {
 
 	@Test
 	void should_replayInsteadOf422_when_originalTransferSpentWholeBalance() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "30.00");
 		String json = transferJson("pr-1", alice, "USD", bob, "USD", "30.00");
 
@@ -86,8 +86,8 @@ class TransferIdempotencyTest extends IntegrationTest {
 
 	@Test
 	void should_createExactlyOneTransfer_when_sameRequestSentConcurrently() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "100.00");
 		String json = transferJson("pr-1", alice, "USD", bob, "USD", "30.00");
 
@@ -101,8 +101,8 @@ class TransferIdempotencyTest extends IntegrationTest {
 
 	@Test
 	void should_notDeadlockAndKeepTotals_when_oppositeTransfersRunConcurrently() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "1000.00");
 		deposit(bob, USD, "1000.00");
 

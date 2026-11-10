@@ -13,15 +13,15 @@ import jakarta.persistence.LockModeType;
 
 public interface BalanceRepository extends JpaRepository<Balance, Long> {
 
-	List<Balance> findByAccountIdOrderById(Long accountId);
+	List<Balance> findByAccountIdOrderByBalanceId(Long accountId);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
 	Optional<Balance> findForUpdateByAccountIdAndCurrency(Long accountId, Currency currency);
 
 	@Lock(LockModeType.PESSIMISTIC_WRITE)
-	Optional<Balance> findForUpdateById(Long id);
+	Optional<Balance> findForUpdateByBalanceId(Long balanceId);
 
-	@Query("select b.id from Balance b where b.accountId = :accountId and b.currency = :currency")
+	@Query("select b.balanceId from Balance b where b.accountId = :accountId and b.currency = :currency")
 	Optional<Long> findIdByAccountIdAndCurrency(Long accountId, Currency currency);
 
 }

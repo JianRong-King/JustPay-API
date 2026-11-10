@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 public class FxRate {
 
 	@Id
-	private Long id;
+	private Long fxRateId;
 
 	@Enumerated(EnumType.STRING)
 	private Currency fromCurrency;
@@ -31,8 +31,8 @@ public class FxRate {
 	protected FxRate() {
 	}
 
-	public Long getId() {
-		return id;
+	public Long getFxRateId() {
+		return fxRateId;
 	}
 
 	public Currency getFromCurrency() {

@@ -18,7 +18,7 @@ public class Balance {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long balanceId;
 
 	private Long accountId;
 
@@ -36,8 +36,8 @@ public class Balance {
 		this.amount = BigDecimal.ZERO.setScale(2);
 	}
 
-	public Long getId() {
-		return id;
+	public Long getBalanceId() {
+		return balanceId;
 	}
 
 	public Long getAccountId() {

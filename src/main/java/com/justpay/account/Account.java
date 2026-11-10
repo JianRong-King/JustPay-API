@@ -14,7 +14,7 @@ public class Account {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long accountId;
 
 	private String holderName;
 
@@ -28,8 +28,8 @@ public class Account {
 		this.createdAt = createdAt;
 	}
 
-	public Long getId() {
-		return id;
+	public Long getAccountId() {
+		return accountId;
 	}
 
 	public String getHolderName() {

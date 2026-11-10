@@ -28,9 +28,9 @@ public class TransferController {
 		return ResponseEntity.status(status).body(result.transfer());
 	}
 
-	@GetMapping("/{id}")
-	public TransferResponse get(@PathVariable Long id) {
-		return transferService.get(id);
+	@GetMapping("/{transferId}")
+	public TransferResponse get(@PathVariable Long transferId) {
+		return transferService.get(transferId);
 	}
 
 }

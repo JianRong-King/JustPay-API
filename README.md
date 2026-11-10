@@ -23,11 +23,11 @@ between currencies at fixed rates. Transfers are idempotent: retrying a request 
 | Method | Path | Purpose |
 |---|---|---|
 | POST | `/api/v1/accounts` | Create an account with MYR, USD and SGD balances at 0 |
-| GET | `/api/v1/accounts/{id}` | Get an account and its balances |
-| POST | `/api/v1/accounts/{id}/deposits` | Deposit `{currency, amount}` into one balance |
+| GET | `/api/v1/accounts/{accountId}` | Get an account and its balances |
+| POST | `/api/v1/accounts/{accountId}/deposits` | Deposit `{currency, amount}` into one balance |
 | POST | `/api/v1/transfers` | Transfer between accounts, or convert within one account |
-| GET | `/api/v1/transfers/{id}` | Get a transfer |
-| GET | `/api/v1/accounts/{id}/ledger` | Ledger entries, newest first; optional `?currency=` |
+| GET | `/api/v1/transfers/{transferId}` | Get a transfer |
+| GET | `/api/v1/accounts/{accountId}/ledger` | Ledger entries, newest first; optional `?currency=` |
 | GET | `/api/v1/fx/rates` | The fixed exchange rates |
 
 Interactive docs: Swagger UI at http://localhost:8080/swagger-ui.html once the app is running.

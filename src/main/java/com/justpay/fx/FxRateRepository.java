@@ -11,6 +11,6 @@ public interface FxRateRepository extends JpaRepository<FxRate, Long> {
 
 	Optional<FxRate> findByFromCurrencyAndToCurrency(Currency fromCurrency, Currency toCurrency);
 
-	List<FxRate> findAllByOrderById();
+	List<FxRate> findAllByOrderByFxRateId();
 
 }

@@ -34,43 +34,43 @@ public class AccountService {
 	public AccountResponse create(String holderName) {
 		Account account = accountRepository.save(new Account(holderName, now()));
 		List<Balance> balances = Arrays.stream(Currency.values())
-				.map(currency -> new Balance(account.getId(), currency))
+				.map(currency -> new Balance(account.getAccountId(), currency))
 				.toList();
 		balanceRepository.saveAll(balances);
 		return AccountResponse.from(account, balances);
 	}
 
 	@Transactional(readOnly = true)
-	public AccountResponse get(Long id) {
-		Account account = findAccount(id);
-		return AccountResponse.from(account, balanceRepository.findByAccountIdOrderById(id));
+	public AccountResponse get(Long accountId) {
+		Account account = findAccount(accountId);
+		return AccountResponse.from(account, balanceRepository.findByAccountIdOrderByBalanceId(accountId));
 	}
 
 	@Transactional
-	public AccountResponse deposit(Long id, Currency currency, BigDecimal amount) {
-		Account account = findAccount(id);
-		Balance balance = balanceRepository.findForUpdateByAccountIdAndCurrency(id, currency)
-				.orElseThrow(() -> new IllegalStateException("Account " + id + " has no " + currency + " balance"));
+	public AccountResponse deposit(Long accountId, Currency currency, BigDecimal amount) {
+		Account account = findAccount(accountId);
+		Balance balance = balanceRepository.findForUpdateByAccountIdAndCurrency(accountId, currency)
+				.orElseThrow(() -> new IllegalStateException("Account " + accountId + " has no " + currency + " balance"));
 		balance.add(amount);
-		ledgerRepository.save(LedgerEntry.deposit(id, currency, amount, now()));
-		return AccountResponse.from(account, balanceRepository.findByAccountIdOrderById(id));
+		ledgerRepository.save(LedgerEntry.deposit(accountId, currency, amount, now()));
+		return AccountResponse.from(account, balanceRepository.findByAccountIdOrderByBalanceId(accountId));
 	}
 
 	@Transactional(readOnly = true)
-	public List<LedgerEntryResponse> getLedger(Long id, Currency currency) {
-		findAccount(id);
+	public List<LedgerEntryResponse> getLedger(Long accountId, Currency currency) {
+		findAccount(accountId);
 		List<LedgerEntry> entries = currency == null
-				? ledgerRepository.findByAccountIdOrderByCreatedAtDescIdDesc(id)
-				: ledgerRepository.findByAccountIdAndCurrencyOrderByCreatedAtDescIdDesc(id, currency);
+				? ledgerRepository.findByAccountIdOrderByCreatedAtDescLedgerEntryIdDesc(accountId)
+				: ledgerRepository.findByAccountIdAndCurrencyOrderByCreatedAtDescLedgerEntryIdDesc(accountId, currency);
 		return entries.stream().map(LedgerEntryResponse::from).toList();
 	}
 
-	private Account findAccount(Long id) {
-		return accountRepository.findById(id).orElseThrow(() -> accountNotFound(id));
+	private Account findAccount(Long accountId) {
+		return accountRepository.findById(accountId).orElseThrow(() -> accountNotFound(accountId));
 	}
 
-	public static ApiException accountNotFound(Long id) {
-		return new ApiException(HttpStatus.NOT_FOUND, "ACCOUNT_NOT_FOUND", "Account " + id + " not found");
+	public static ApiException accountNotFound(Long accountId) {
+		return new ApiException(HttpStatus.NOT_FOUND, "ACCOUNT_NOT_FOUND", "Account " + accountId + " not found");
 	}
 
 }

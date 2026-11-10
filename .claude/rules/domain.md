@@ -7,16 +7,19 @@ paths:
 
 ## Data model
 
-- `accounts`: id, holder name, created time.
-- `balances`: id, account id, currency, amount `NUMERIC(19,2)`.
+- Each primary key is named after its table (`account_id`, `balance_id`, `transfer_id`,
+  `ledger_entry_id`, `fx_rate_id`). Never name a column plain `id`. A column name always
+  means one key, so a foreign key uses the same name as the primary key it points to.
+- `accounts`: account_id, holder name, created time.
+- `balances`: balance_id, account_id, currency, amount `NUMERIC(19,2)`.
   - UNIQUE (account id, currency). `CHECK (amount >= 0)`.
   - When an account is created, create all three balances (MYR, USD, SGD) at 0 in the
     same transaction. Balances are never created anywhere else.
-- `transfers`: id, paymentRequestId (UNIQUE), fromAccountId, fromCurrency, fromAmount,
+- `transfers`: transfer_id, paymentRequestId (UNIQUE), fromAccountId, fromCurrency, fromAmount,
   toAccountId, toCurrency, toAmount, rate, created time.
-- `ledger_entries`: id, account id, currency, signed amount, type (`DEPOSIT`,
-  `TRANSFER_OUT`, `TRANSFER_IN`), transfer id (null for deposits), created time.
-- `fx_rates`: from currency, to currency, rate `NUMERIC(19,6)`.
+- `ledger_entries`: ledger_entry_id, account_id, currency, signed amount, type (`DEPOSIT`,
+  `TRANSFER_OUT`, `TRANSFER_IN`), transfer_id (null for deposits), created time.
+- `fx_rates`: fx_rate_id, from currency, to currency, rate `NUMERIC(19,6)`.
 
 ## Money rules
 
@@ -43,7 +46,7 @@ paths:
   5. Write two ledger entries (see Ledger rules)
 - Locking: load both balance rows with `@Lock(PESSIMISTIC_WRITE)` so two transfers
   cannot spend the same money at the same time. Always lock the balance with the
-  lower id first, so two opposite transfers never wait on each other forever.
+  lower balance_id first, so two opposite transfers never wait on each other forever.
 
 ## Currency conversion rules
 

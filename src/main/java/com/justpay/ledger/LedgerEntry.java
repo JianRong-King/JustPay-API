@@ -22,7 +22,7 @@ public class LedgerEntry {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+	private Long ledgerEntryId;
 
 	private Long accountId;
 
@@ -66,8 +66,8 @@ public class LedgerEntry {
 		return new LedgerEntry(accountId, currency, amount, LedgerEntryType.TRANSFER_IN, transferId, createdAt);
 	}
 
-	public Long getId() {
-		return id;
+	public Long getLedgerEntryId() {
+		return ledgerEntryId;
 	}
 
 	public Long getAccountId() {

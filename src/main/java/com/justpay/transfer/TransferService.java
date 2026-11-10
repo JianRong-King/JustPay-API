@@ -75,19 +75,19 @@ public class TransferService {
 				request.toAccountId(), request.toCurrency(), conversion.toAmount(),
 				conversion.rate(), now));
 		ledgerRepository.save(LedgerEntry.transferOut(request.fromAccountId(), request.fromCurrency(),
-				amount, transfer.getId(), now));
+				amount, transfer.getTransferId(), now));
 		ledgerRepository.save(LedgerEntry.transferIn(request.toAccountId(), request.toCurrency(),
-				conversion.toAmount(), transfer.getId(), now));
+				conversion.toAmount(), transfer.getTransferId(), now));
 
 		return new TransferResult(TransferResponse.from(transfer), true);
 	}
 
 	@Transactional(readOnly = true)
-	public TransferResponse get(Long id) {
-		return transferRepository.findById(id)
+	public TransferResponse get(Long transferId) {
+		return transferRepository.findById(transferId)
 				.map(TransferResponse::from)
 				.orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "TRANSFER_NOT_FOUND",
-						"Transfer " + id + " not found"));
+						"Transfer " + transferId + " not found"));
 	}
 
 	private Optional<Transfer> findExisting(TransferRequest request) {
@@ -176,7 +176,7 @@ public class TransferService {
 	}
 
 	private Balance lockBalance(Long balanceId) {
-		return balanceRepository.findForUpdateById(balanceId)
+		return balanceRepository.findForUpdateByBalanceId(balanceId)
 				.orElseThrow(() -> new IllegalStateException("Balance " + balanceId + " not found"));
 	}
 

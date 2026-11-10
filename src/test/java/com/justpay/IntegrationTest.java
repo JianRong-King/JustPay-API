@@ -42,7 +42,7 @@ public abstract class IntegrationTest {
 			SELECT b.account_id, b.currency, b.amount, COALESCE(SUM(l.amount), 0) AS ledger_sum
 			FROM balances b
 			LEFT JOIN ledger_entries l ON l.account_id = b.account_id AND l.currency = b.currency
-			GROUP BY b.id, b.account_id, b.currency, b.amount
+			GROUP BY b.balance_id, b.account_id, b.currency, b.amount
 			HAVING b.amount <> COALESCE(SUM(l.amount), 0)
 			""";
 

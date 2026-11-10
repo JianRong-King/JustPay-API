@@ -208,3 +208,25 @@ Decisions (user):
 
 Verification:
 - YAML parses. No repo secrets set yet, so both jobs will skip. Not run on GitHub yet.
+
+## Follow-up — Table-specific primary key names (2026-11-10)
+
+Built:
+- `V5__rename_primary_keys.sql`: renames `id` → `account_id`, `balance_id`, `transfer_id`, `ledger_entry_id`, `fx_rate_id`. V1–V4 untouched; Postgres carries FKs, indexes and identity sequences over.
+- Entities: `id` field / `getId()` → `accountId` / `getAccountId()` etc. in `Account`, `Balance`, `Transfer`, `LedgerEntry`, `FxRate`.
+- Repositories: derived names follow the field (`findByAccountIdOrderByBalanceId`, `findForUpdateByBalanceId`, `findAllByOrderByFxRateId`, `...CreatedAtDescLedgerEntryIdDesc`); scalar lock query → `select b.balanceId ...`.
+- DTOs: JSON `id` → `accountId` (`AccountResponse`), `transferId` (`TransferResponse`), `ledgerEntryId` (`LedgerEntryResponse`).
+- Controllers / services: path vars `{accountId}`, `{transferId}`; `id` params renamed. URLs unchanged.
+- Tests: `.id()` → `.accountId()` / `.transferId()`; `IntegrationTest` SQL groups by `b.balance_id`. No assertions changed.
+- Docs: `domain.md` PK naming rule + new column names, lock order "lower balance_id"; `api.md`, `README.md` paths.
+
+Decisions:
+- Rename across DB, Java and JSON, plus path variables (user) — same name always means the same key; PK matches the FK that references it.
+- New migration instead of editing V1–V4 — already applied.
+- `docs/ai-log.md` and `docs/build-plan.md` keep `id` — history.
+
+Issues:
+- First `/verify` run: Docker Desktop not running → compiled only, re-ran after start.
+
+Verification:
+- `./mvnw verify`: 36 tests pass.

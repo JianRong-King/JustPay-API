@@ -21,8 +21,8 @@ class TransferApiTest extends IntegrationTest {
 
 	@Test
 	void should_updateBothBalancesAndWriteTwoLedgerEntries_when_sameCurrencyTransfer() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "100.00");
 
 		TransferResponse transfer = transfer("pr-1", alice, "USD", bob, "USD", "30.00");
@@ -35,19 +35,19 @@ class TransferApiTest extends IntegrationTest {
 		LedgerEntryResponse out = getLedger(alice, "").get(0);
 		assertThat(out.type()).isEqualTo(LedgerEntryType.TRANSFER_OUT);
 		assertThat(out.amount()).isEqualByComparingTo("-30.00");
-		assertThat(out.transferId()).isEqualTo(transfer.id());
+		assertThat(out.transferId()).isEqualTo(transfer.transferId());
 
 		List<LedgerEntryResponse> bobLedger = getLedger(bob, "");
 		assertThat(bobLedger).hasSize(1);
 		assertThat(bobLedger.get(0).type()).isEqualTo(LedgerEntryType.TRANSFER_IN);
 		assertThat(bobLedger.get(0).amount()).isEqualByComparingTo("30.00");
-		assertThat(bobLedger.get(0).transferId()).isEqualTo(transfer.id());
+		assertThat(bobLedger.get(0).transferId()).isEqualTo(transfer.transferId());
 	}
 
 	@Test
 	void should_creditAmountTimesRateRoundedAndStoreRate_when_crossCurrencyTransfer() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "100.00");
 
 		TransferResponse transfer = transfer("pr-1", alice, "USD", bob, "MYR", "10.01");
@@ -57,12 +57,12 @@ class TransferApiTest extends IntegrationTest {
 		assertThat(transfer.rate()).isEqualByComparingTo("4.400000");
 		assertThat(amountOf(getAccount(alice), USD)).isEqualByComparingTo("89.99");
 		assertThat(amountOf(getAccount(bob), MYR)).isEqualByComparingTo("44.04");
-		assertThat(getTransfer(transfer.id())).isEqualTo(transfer);
+		assertThat(getTransfer(transfer.transferId())).isEqualTo(transfer);
 	}
 
 	@Test
 	void should_updateBothBalancesOfSameAccount_when_convertingUsdToMyr() throws Exception {
-		Long alice = createAccount("Alice").id();
+		Long alice = createAccount("Alice").accountId();
 		deposit(alice, USD, "100.00");
 
 		transfer("pr-1", alice, "USD", alice, "MYR", "25.00");
@@ -75,7 +75,7 @@ class TransferApiTest extends IntegrationTest {
 
 	@Test
 	void should_return422SameBalance_when_sameAccountAndSameCurrency() throws Exception {
-		Long alice = createAccount("Alice").id();
+		Long alice = createAccount("Alice").accountId();
 		deposit(alice, USD, "100.00");
 
 		postTransfer(transferJson("pr-1", alice, "USD", alice, "USD", "10.00"))
@@ -87,8 +87,8 @@ class TransferApiTest extends IntegrationTest {
 
 	@Test
 	void should_return422AndChangeNoBalances_when_insufficientBalance() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, USD, "10.00");
 
 		postTransfer(transferJson("pr-1", alice, "USD", bob, "MYR", "10.01"))
@@ -103,8 +103,8 @@ class TransferApiTest extends IntegrationTest {
 
 	@Test
 	void should_allowTransfer_when_amountEqualsWholeBalance() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, SGD, "10.00");
 
 		transfer("pr-1", alice, "SGD", bob, "SGD", "10.00");
@@ -115,8 +115,8 @@ class TransferApiTest extends IntegrationTest {
 
 	@Test
 	void should_return422AmountTooSmall_when_convertedAmountRoundsToZero() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 		deposit(alice, MYR, "1.00");
 
 		postTransfer(transferJson("pr-1", alice, "MYR", bob, "USD", "0.01"))
@@ -128,7 +128,7 @@ class TransferApiTest extends IntegrationTest {
 
 	@Test
 	void should_return404_when_transferAccountUnknown() throws Exception {
-		Long alice = createAccount("Alice").id();
+		Long alice = createAccount("Alice").accountId();
 		deposit(alice, USD, "100.00");
 
 		postTransfer(transferJson("pr-1", alice, "USD", 999L, "USD", "10.00"))
@@ -140,8 +140,8 @@ class TransferApiTest extends IntegrationTest {
 
 	@Test
 	void should_return400_when_transferCurrencyUnsupported() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 
 		postTransfer(transferJson("pr-1", alice, "USD", bob, "EUR", "10.00"))
 				.andExpect(status().isBadRequest())
@@ -150,8 +150,8 @@ class TransferApiTest extends IntegrationTest {
 
 	@Test
 	void should_return400_when_paymentRequestIdMissing() throws Exception {
-		Long alice = createAccount("Alice").id();
-		Long bob = createAccount("Bob").id();
+		Long alice = createAccount("Alice").accountId();
+		Long bob = createAccount("Bob").accountId();
 
 		postTransfer(transferJson("", alice, "USD", bob, "USD", "10.00"))
 				.andExpect(status().isBadRequest())
@@ -174,8 +174,8 @@ class TransferApiTest extends IntegrationTest {
 		return objectMapper.readValue(body, TransferResponse.class);
 	}
 
-	private TransferResponse getTransfer(Long id) throws Exception {
-		String body = mockMvc.perform(get("/api/v1/transfers/" + id))
+	private TransferResponse getTransfer(Long transferId) throws Exception {
+		String body = mockMvc.perform(get("/api/v1/transfers/" + transferId))
 				.andExpect(status().isOk())
 				.andReturn().getResponse().getContentAsString();
 		return objectMapper.readValue(body, TransferResponse.class);

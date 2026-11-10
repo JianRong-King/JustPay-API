@@ -33,20 +33,20 @@ public class AccountController {
 		return accountService.create(request.holderName());
 	}
 
-	@GetMapping("/{id}")
-	public AccountResponse get(@PathVariable Long id) {
-		return accountService.get(id);
+	@GetMapping("/{accountId}")
+	public AccountResponse get(@PathVariable Long accountId) {
+		return accountService.get(accountId);
 	}
 
-	@PostMapping("/{id}/deposits")
-	public AccountResponse deposit(@PathVariable Long id, @Valid @RequestBody DepositRequest request) {
-		return accountService.deposit(id, request.currency(), request.amount());
+	@PostMapping("/{accountId}/deposits")
+	public AccountResponse deposit(@PathVariable Long accountId, @Valid @RequestBody DepositRequest request) {
+		return accountService.deposit(accountId, request.currency(), request.amount());
 	}
 
-	@GetMapping("/{id}/ledger")
-	public List<LedgerEntryResponse> ledger(@PathVariable Long id,
+	@GetMapping("/{accountId}/ledger")
+	public List<LedgerEntryResponse> ledger(@PathVariable Long accountId,
 			@RequestParam(required = false) Currency currency) {
-		return accountService.getLedger(id, currency);
+		return accountService.getLedger(accountId, currency);
 	}
 
 }
