@@ -12,7 +12,7 @@ between currencies at fixed rates. Transfers are idempotent: retrying a request 
   `amount × rate`, rounded once to 2 decimal places, and the transfer stores the rate it used.
 - **Conversion.** Move money between your own balances (e.g. USD → MYR) as a transfer to the same account.
 - **Idempotency.** Every transfer carries a `paymentRequestId`. Sending the same request again returns the
-  original transfer and moves no money; reusing the id with different details is rejected with `409`.
+  original transfer and moves no money; reusing the `paymentRequestId` with different details is rejected with `409`.
 - **Ledger.** Every balance change writes an entry that is never edited or deleted, so each balance always
   equals the sum of its ledger entries.
 - **Safe under concurrency.** Transfers lock both balance rows, so two requests cannot spend the same money
@@ -35,7 +35,7 @@ Interactive docs: Swagger UI at http://localhost:8080/swagger-ui.html once the a
 ## Example
 
 ```bash
-# Create two accounts (ids 1 and 2 on a fresh database)
+# Create two accounts (accountId 1 and 2 on a fresh database)
 curl -X POST localhost:8080/api/v1/accounts -H "Content-Type: application/json" -d '{"holderName": "Alice"}'
 curl -X POST localhost:8080/api/v1/accounts -H "Content-Type: application/json" -d '{"holderName": "Bob"}'
 
@@ -74,7 +74,7 @@ and no money moves.
   | USD → SGD | 1.30 | SGD → USD | 0.76 |
 
 - A transfer runs in one database transaction. Both balance rows are locked
-  (`SELECT … FOR UPDATE`), lower id first, so concurrent transfers cannot overspend or deadlock.
+  (`SELECT … FOR UPDATE`), lower `balance_id` first, so concurrent transfers cannot overspend or deadlock.
 - Every balance change writes a ledger entry. Ledger entries are never updated or deleted.
 
 ## Errors
@@ -89,8 +89,8 @@ Every error has the same shape:
 |---|---|---|
 | 400 | `INVALID_REQUEST` | Missing or invalid field, malformed JSON, bad amount |
 | 400 | `UNSUPPORTED_CURRENCY` | Currency other than MYR, USD, SGD |
-| 404 | `ACCOUNT_NOT_FOUND` | Unknown account id |
-| 404 | `TRANSFER_NOT_FOUND` | Unknown transfer id |
+| 404 | `ACCOUNT_NOT_FOUND` | Unknown `accountId` |
+| 404 | `TRANSFER_NOT_FOUND` | Unknown `transferId` |
 | 409 | `PAYMENT_REQUEST_ID_CONFLICT` | `paymentRequestId` reused with different details |
 | 422 | `SAME_BALANCE` | Same account and same currency |
 | 422 | `INSUFFICIENT_BALANCE` | Sender balance too low |
@@ -116,7 +116,7 @@ flowchart LR
         EH["GlobalExceptionHandler<br/>every error as code + message"]
     end
 
-    DB[("PostgreSQL 16<br/>schema from Flyway V1-V4")]
+    DB[("PostgreSQL 16<br/>schema from Flyway V1-V5")]
 
     Client -->|JSON over HTTP| AC
     Client -->|JSON over HTTP| TC
@@ -149,7 +149,7 @@ sequenceDiagram
         S->>DB: Both accounts exist? (404)
         S->>S: Same account and currency? (422 SAME_BALANCE)
         S->>S: toAmount = amount x rate, HALF_EVEN (422 if 0.00)
-        S->>DB: Lock both balance rows, lower id first (SELECT ... FOR UPDATE)
+        S->>DB: Lock both balance rows, lower balance_id first (SELECT ... FOR UPDATE)
         S->>DB: Look up paymentRequestId again (catches a concurrent duplicate)
         S->>S: Sender has enough? (422 INSUFFICIENT_BALANCE)
         S->>DB: Subtract from sender, add to receiver
@@ -172,18 +172,18 @@ erDiagram
     FX_RATES ||..o{ TRANSFERS : "rate copied into"
 
     ACCOUNTS {
-        bigint id PK
+        bigint account_id PK
         varchar holder_name
         timestamptz created_at
     }
     BALANCES {
-        bigint id PK
+        bigint balance_id PK
         bigint account_id FK
         varchar currency "unique per account"
         numeric amount "never below 0"
     }
     TRANSFERS {
-        bigint id PK
+        bigint transfer_id PK
         varchar payment_request_id UK
         bigint from_account_id FK
         varchar from_currency
@@ -195,7 +195,7 @@ erDiagram
         timestamptz created_at
     }
     LEDGER_ENTRIES {
-        bigint id PK
+        bigint ledger_entry_id PK
         bigint account_id FK
         varchar currency
         numeric amount "signed"
@@ -204,7 +204,7 @@ erDiagram
         timestamptz created_at
     }
     FX_RATES {
-        bigint id PK
+        bigint fx_rate_id PK
         varchar from_currency
         varchar to_currency
         numeric rate
@@ -257,7 +257,7 @@ src/main/java/com/justpay/
   ledger/     ledger entries
   fx/         exchange rates and conversion
   common/     Currency, errors, timestamps
-src/main/resources/db/migration/   Flyway migrations V1–V4
+src/main/resources/db/migration/   Flyway migrations V1–V5
 docs/         build plan and step-by-step development log
 ```
 
